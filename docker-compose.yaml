@@ -1,0 +1,57 @@
+version: '3.6'
+
+services:
+  app:
+    container_name: aplicacao
+    build:
+      context: ./aplicacao
+      dockerfile: Dockerfile
+    volumes:
+      - ./aplicacao:/aplicacao
+    networks:
+      - aplicacao
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+    depends_on:
+      - app-database
+
+  app-database:
+    image: postgres:13
+    container_name: app-database
+    environment:
+      POSTGRES_USER: postgres 
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - "/etc/localtime:/etc/localtime:ro"
+    networks:
+      - aplicacao
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+  
+  nginx:
+    build: 
+      context: nginx
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - app
+    networks:
+      - aplicacao
+    ports:
+      - 80:80
+    expose:
+      - 80
+
+
+volumes:
+  postgres-data:
+
+networks:
+  aplicacao:
+    driver: bridge
+  
